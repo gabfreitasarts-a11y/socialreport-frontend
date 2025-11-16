@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Social Report — Diagnóstico Automático</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <div class="container" id="appContainer">
+    <header>
+      <img class="logo" src="Images/logo.png" alt="logo" onerror="this.src='https://via.placeholder.com/44x44?text=SR'"/>
+      <div>
+        <h1>Social Report</h1>
+        <p>Diagnóstico automático de perfis — demo</p>
+      </div>
+      <div style="margin-left:auto;text-align:right">
+        <div class="small">Plano: R$ 9,90/mês</div>
+        <a href="pay.html" id="btn-upgrade" class="primary">Assinar / Analisar</a>
+      </div>
+    </header>
+
+    <main class="grid">
+      <!-- LEFT -->
+      <section class="card left">
+        <div class="big-input">
+          <input id="handle" type="text" placeholder="Digite @handle (ex: @seunome)" value="@demo_user" />
+          <button class="primary" id="analyzeBtn">Analisar</button>
+        </div>
+        <div class="small">Teste com <code>@demo_user</code>. Aqui usamos dados públicos via backend (demo).</div>
+
+        <hr style="opacity:.06;margin:12px 0">
+
+        <div class="profile-preview">
+          <div class="avatar"><img id="profilePic" src="Images/avatar-demo.jpg" alt="avatar" onerror="this.src='https://via.placeholder.com/150'"/></div>
+          <div class="meta">
+            <h2 id="profileName">@demo_user</h2>
+            <p id="profileBio">Perfil de demonstração • 1.2k seguidores • Criador de conteúdo</p>
+          </div>
+        </div>
+
+        <div class="kpis">
+          <div class="kpi"><h3>Engajamento</h3><div class="value" id="kpi-eng">—</div></div>
+          <div class="kpi"><h3>Frequência</h3><div class="value" id="kpi-freq">—</div></div>
+          <div class="kpi"><h3>Melhor horário</h3><div class="value" id="kpi-hour">—</div></div>
+          <div class="kpi"><h3>Crescimento semanal</h3><div class="value" id="kpi-growth">—</div></div>
+        </div>
+
+        <div style="margin-top:12px">
+          <button id="downloadPdf" class="primary">Baixar relatório (PDF)</button>
+          <button id="saveReport" class="btn-ghost">Salvar histórico</button>
+        </div>
+
+        <div style="margin-top:12px;color:var(--muted);font-size:13px">
+          <strong>Nota:</strong> integração real com Instagram via backend. Essa é uma demo que usa o servidor local.
+        </div>
+      </section>
+
+      <!-- RIGHT -->
+      <section class="card right" id="rightPanel">
+        <div class="panel-top">
+          <div class="score">
+            <div class="badge" id="scoreBadge">—</div>
+            <div>
+              <div class="small">Pontuação geral</div>
+              <h2 id="scoreText" style="margin:6px 0 0 0">— / 100</h2>
+              <div class="small" id="scoreDesc">—</div>
+            </div>
+          </div>
+
+          <div style="text-align:right">
+            <div class="small">Relatórios gerados</div>
+            <div style="font-weight:700;font-size:18px" id="reportsCount">0</div>
+          </div>
+        </div>
+
+        <div class="charts">
+          <div>
+            <canvas id="chartEng" height="220"></canvas>
+            <div class="analysis">
+              <h3>Análise automática</h3>
+              <div id="analysisText">Clique em <strong>Analisar</strong> para gerar o diagnóstico automático do perfil.</div>
+            </div>
+
+            <div class="recommendations" id="recs"></div>
+          </div>
+
+          <div class="card side">
+            <h3 style="margin-top:0">Resumo rápido</h3>
+            <div class="small" style="margin-bottom:8px" id="summaryShort">—</div>
+            <hr style="opacity:.05">
+            <h3 style="font-size:14px;margin:8px 0">Distribuição de formato</h3>
+            <canvas id="chartFormat" width="260" height="220"></canvas>
+            <div style="margin-top:6px">
+              <button id="btn-upsell" class="primary" style="width:100%">Quer analisar mais perfis? Atualize</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:10px;color:var(--muted);font-size:13px">Históricos e ranks ficam salvos localmente no browser (demo).</div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <div>© Social Report — Demo</div>
+      <div>Design simples • R$ 9,90/mês • Pagamento: PIX (14982098075) — demo</div>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

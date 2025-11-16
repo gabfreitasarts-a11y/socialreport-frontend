@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pagamento — Social Report</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <img class="logo" src="Images/logo.png" alt="logo" onerror="this.src='https://via.placeholder.com/44x44?text=SR'"/>
+      <div>
+        <h1>Social Report</h1>
+        <p>Pagamento via PIX — demo</p>
+      </div>
+      <div style="margin-left:auto;text-align:right">
+        <a href="index.html" class="primary">Voltar</a>
+      </div>
+    </header>
+
+    <main class="grid-single">
+      <section class="card">
+        <h2>Pagamento via PIX (teste)</h2>
+        <p>Escaneie o QR Code abaixo ou copie a chave PIX:</p>
+
+        <div style="text-align:center;margin-top:12px">
+          <canvas id="qrCanvas" width="240" height="240"></canvas>
+        </div>
+
+        <p class="pixKey">Chave PIX: <strong id="pixKeyText">14982098075</strong></p>
+
+        <div style="display:flex;gap:10px;justify-content:center;margin-top:10px">
+          <button id="copyPix" class="primary">Copiar chave</button>
+          <button id="btnJaPaguei" class="primary" style="background:linear-gradient(90deg,#2fbf71,#2aa35f)">Já paguei</button>
+        </div>
+
+        <p class="muted" style="margin-top:12px">Atenção: este é um fluxo de demonstração. Para produção, integre seu PSP e valide via webhook no backend.</p>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <div>© Social Report — Demo</div>
+    </footer>
+  </div>
+
+  <script src="pay.js"></script>
+</body>
+</html>
