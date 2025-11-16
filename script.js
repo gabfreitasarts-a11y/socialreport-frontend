@@ -1,4 +1,5 @@
-// script.js — frontend logic with Instagram fetch integration (calls localhost backend)
+// script.js — frontend logic with Instagram fetch integration (calls deployed backend)
+
 // Elements
 const analyzeBtn = document.getElementById('analyzeBtn');
 const handleInput = document.getElementById('handle');
@@ -26,7 +27,7 @@ reportsCount.innerText = history.length || 0;
 // helpers
 function rnd(min, max){ return Math.round(Math.random()*(max-min)+min) }
 
-// fetch Instagram data from local backend
+// fetch Instagram data from deployed backend
 async function fetchInstagram(username){
   try{
     const clean = username.replace('@','').trim();
@@ -40,22 +41,21 @@ async function fetchInstagram(username){
   }
 }
 
-// generate diagnosis (same rules as before)
+// generate diagnosis from backend data
 function generateDiagnosisFromData(data){
-  // data: { followers, posts, midias: [{likes, comments, tipo}], ... }
   const recent = data.midias || [];
   const followers = data.seguidores || 1000;
+
   const avgLikes = recent.slice(0,8).reduce((s,m)=>s+(m.likes||0),0) / Math.max(1, Math.min(8,recent.length));
-  const engagement = (avgLikes / Math.max(1, followers)) * 100; // percent
+  const engagement = (avgLikes / Math.max(1, followers)) * 100;
 
-  const freqPerWeek = Math.min(7, Math.max(0, Math.round((data.posts || 0) / 4))); // naive
+  const freqPerWeek = Math.min(7, Math.max(0, Math.round((data.posts || 0) / 4)));
   const bestHour = '18:00';
-  const growthWeek = 1.2; // placeholder
+  const growthWeek = 1.2;
 
-  // format performance guess
   const formatPerf = {"Reel":0.4,"Foto":0.3,"Vídeo (long)":0.2,"Stories":0.1};
 
-  const metrics = {
+  return {
     engagement: Number(engagement.toFixed(2)),
     freqPerWeek,
     bestHour,
@@ -64,11 +64,8 @@ function generateDiagnosisFromData(data){
     usesCTA: true,
     hasHashtags: true
   };
-
-  return metrics;
 }
 
-// reuse existing generateDiagnosis (from previous versions) logic — implement locally
 function generateDiagnosis(metrics){
   const {engagement, freqPerWeek, bestHour, growthWeek, formatPerf} = metrics;
   let strengths = [], weaknesses = [], recs = [];
@@ -85,19 +82,24 @@ function generateDiagnosis(metrics){
 
   const bestFormat = Object.keys(formatPerf).sort((a,b)=>formatPerf[b]-formatPerf[a])[0];
   recs.push("Priorize mais " + bestFormat + "s, pois eles têm melhor desempenho.");
-  if(metrics.usesCTA) strengths.push("Uso de CTA nas legendas."); else recs.push("Use CTAs claros nas legendas (ex: 'comente', 'salve').");
+
+  if(metrics.usesCTA) strengths.push("Uso de CTA nas legendas.");
   if(metrics.hasHashtags) recs.push("Otimize hashtags: combine 2-3 tags de alto alcance + 5-7 nichadas.");
 
   let score = Math.round((engagement*20) + Math.min(freqPerWeek,4)*10 + Math.min(growthWeek,3)*10 + (formatPerf[bestFormat]*15));
   score = Math.max(18, Math.min(98, score));
-  let desc = score >= 75 ? "Excelente — continue e escale." : (score >= 50 ? "Bom — tem espaço para melhorias." : "Precisa de melhorias — foco em frequência e formato.");
+
+  let desc = score >= 75 ? "Excelente — continue e escale." :
+             score >= 50 ? "Bom — tem espaço para melhorias." :
+                           "Precisa de melhorias — foco em frequência e formato.";
+
   return {strengths, weaknesses, recs, score, desc, bestFormat};
 }
 
-// render charts
 function renderCharts(metrics){
   const engCtx = document.getElementById('chartEng').getContext('2d');
   const fmtCtx = document.getElementById('chartFormat').getContext('2d');
+
   const labels = ["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"];
   const dataEng = labels.map(()=> rnd(Math.max(10,metrics.engagement*10-6), Math.max(15,metrics.engagement*10+12)));
 
@@ -110,6 +112,7 @@ function renderCharts(metrics){
 
   const formats = Object.keys(metrics.formatPerf);
   const vals = formats.map(k=> Math.round(metrics.formatPerf[k]*100));
+
   if(chartFormat) chartFormat.destroy();
   chartFormat = new Chart(fmtCtx, {
     type:'doughnut',
@@ -118,11 +121,10 @@ function renderCharts(metrics){
   });
 }
 
-// perform analysis using backend data
 async function analyzeHandleWithInstagram(handle){
   try{
     const data = await fetchInstagram(handle);
-    // fill UI
+
     profileName.innerText = '@' + (data.username || handle.replace('@',''));
     profileBio.innerText = `${data.seguidores || 0} seguidores • ${data.biografia || ''}`;
     profilePic.src = data.foto || 'Images/avatar-demo.jpg';
@@ -130,7 +132,6 @@ async function analyzeHandleWithInstagram(handle){
     const metrics = generateDiagnosisFromData(data);
     const diag = generateDiagnosis(metrics);
 
-    // KPIs
     kpiEng.innerText = metrics.engagement.toFixed(2) + '%';
     kpiFreq.innerText = metrics.freqPerWeek + 'x/sem';
     kpiHour.innerText = metrics.bestHour;
@@ -140,20 +141,19 @@ async function analyzeHandleWithInstagram(handle){
     scoreText.innerText = diag.score + ' / 100';
     scoreDesc.innerText = diag.desc;
 
-    // analysis text
     let analysis = '';
     analysis += diag.strengths.length ? '<strong>Pontos fortes:</strong><ul>' + diag.strengths.map(s=>`<li>${s}</li>`).join('') + '</ul>' : '';
     analysis += diag.weaknesses.length ? '<strong>Pontos fracos:</strong><ul>' + diag.weaknesses.map(w=>`<li>${w}</li>`).join('') + '</ul>' : '';
     analysis += '<strong>Recomendações:</strong><ul>' + diag.recs.map(r=>`<li>${r}</li>`).join('') + '</ul>';
     analysisText.innerHTML = analysis;
 
-    // recs cards
     recsWrap.innerHTML = '';
     const recItems = [
       {title: "Frequência ideal", body: `Poste ${Math.max(3, Math.round(metrics.freqPerWeek || 3))}x por semana para manter alcance.`},
-      {title: "Formato principal", body: `Priorize ${diag.bestFormat} e adapte o conteúdo para 6-10s (quando possível).`},
-      {title: "Hashtags & CTAs", body: `Use 7-10 hashtags relevantes e inclua CTA ao final da legenda.`}
+      {title: "Formato principal", body: `Priorize ${diag.bestFormat} e produza conteúdo entre 6 e 10 segundos.`},
+      {title: "Hashtags & CTAs", body: `Use 7–10 hashtags relevantes e finalize com uma CTA clara.`}
     ];
+
     recItems.forEach(r=>{
       const div = document.createElement('div');
       div.className = 'rec';
@@ -165,7 +165,6 @@ async function analyzeHandleWithInstagram(handle){
 
     renderCharts(metrics);
 
-    // save history
     const now = new Date().toISOString();
     history.unshift({handle, date:now, score:diag.score});
     if(history.length>50) history.pop();
@@ -177,13 +176,12 @@ async function analyzeHandleWithInstagram(handle){
   }
 }
 
-// bind analyze button
 analyzeBtn && analyzeBtn.addEventListener('click', ()=> {
   const handle = handleInput.value.trim() || '@demo_user';
   analyzeHandleWithInstagram(handle);
 });
 
-// PDF generator (extracts analysis text and rec cards)
+// PDF generator
 async function generatePdfFromAnalysis(){
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF({ unit: 'pt', format: 'a4' });
@@ -193,15 +191,11 @@ async function generatePdfFromAnalysis(){
   const maxWidth = pageWidth - margin*2;
   const lineHeight = 14;
 
-  // header
-  pdf.setFillColor(255,255,255);
-  pdf.rect(0,0,pageWidth,820,'F');
   pdf.setFont('helvetica','bold');
   pdf.setFontSize(18);
   pdf.text('Social Report — Relatório', margin, y);
   y += 28;
 
-  // analysis text
   const analysisTextEl = document.getElementById('analysisText');
   const analise = analysisTextEl ? analysisTextEl.innerText : '';
   pdf.setFont('helvetica','bold'); pdf.setFontSize(12); pdf.text('Análise automática', margin, y); y += 16;
@@ -209,7 +203,6 @@ async function generatePdfFromAnalysis(){
   const lines = pdf.splitTextToSize(analise || '—', maxWidth);
   pdf.text(lines, margin, y); y += lines.length * lineHeight + 10;
 
-  // rec cards
   const recCards = Array.from(document.querySelectorAll('.rec'));
   for(const card of recCards){
     const title = card.querySelector('strong')?.innerText || '';
@@ -221,7 +214,6 @@ async function generatePdfFromAnalysis(){
     if(y > 740){ pdf.addPage(); y = 50; }
   }
 
-  // footer
   const pageCount = pdf.internal.getNumberOfPages();
   for(let i=1;i<=pageCount;i++){
     pdf.setPage(i);
