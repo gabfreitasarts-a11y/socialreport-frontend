@@ -148,7 +148,7 @@
   // ===========================
   document.getElementById("payMercadoPago").addEventListener("click", async () => {
     try {
-      const res = await fetch("https://SEU-BACKEND.onrender.com/create_payment", {
+      const res = await fetch("https://socialreport-backend.onrender.com/webhook", {
         method: "POST",
         headers: { "Content-Type": "application/json" }
       });
