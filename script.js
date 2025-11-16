@@ -30,7 +30,7 @@ function rnd(min, max){ return Math.round(Math.random()*(max-min)+min) }
 async function fetchInstagram(username){
   try{
     const clean = username.replace('@','').trim();
-    const res = await fetch(`http://localhost:3000/api/instagram/${clean}`);
+    const res = await fetch(`https://socialreport-backend.onrender.com/api/instagram/${clean}`);
     if(!res.ok) throw new Error('Perfil não encontrado ou servidor offline');
     const data = await res.json();
     return data;
